@@ -7,9 +7,12 @@ var engine, world;
 var box1, pig1;
 var backgroundImg,platform;
 var slingShot;
+var gameState;
+var score,bg;
 
 function preload() {
-    backgroundImg = loadImage("sprites/bg.png");
+    getBackgroundImage();
+    bg= loadImage("sprites/ground.png");
 }
  
 function setup(){
@@ -39,22 +42,33 @@ function setup(){
     bird = new Bird(200,50);
 
     slingShot= new SlingShot(bird.body,{x:200,y:50});
+    gameState="onSling";
+    score=0;
 }
 
 function draw(){
-    background(backgroundImg);
+    if(backgroundImg){
+        background(backgroundImg);
+    }
+    else{
+        background(bg);
+    }
+    noStroke();
+    textSize(35);
+    fill("white");
+    text("Score  "+score,width-300,50);
     Engine.update(engine);
     box1.display();
     box2.display();
     ground.display();
     pig1.display();
     log1.display();
-
+    pig1.score();
     box3.display();
     box4.display();
     pig3.display();
     log3.display();
-
+    pig3.score();
     box5.display();
     log4.display();
     log5.display();
@@ -64,15 +78,37 @@ function draw(){
     slingShot.display();
 }
  function mouseDragged(){
-     Matter.Body.setPosition(bird.body,{x:mouseX,y:mouseY});
+     if(gameState !== "launched"){
+        Matter.Body.setPosition(bird.body,{x:mouseX,y:mouseY});
+     }
  }
  function mouseReleased(){
     slingShot.fly();
+    gameState="launched";
 
  }
 
  function keyPressed(){
         if(keyCode=32){
             slingShot.attach(bird.body);
+            gameState="onSling";
+            bird.trajectory=[];
+            Matter.Body.setPosition(bird.body,{x:200,y:50});
         }
+ }
+
+ async function getBackgroundImage(){
+    var response= await fetch("http://worldtimeapi.org/api/timezone/America/Los_Angeles");
+    var responseJson= await response.json();
+    var dateTime= responseJson.datetime;
+    var hour = dateTime.slice(11,13);
+    if(hour>=06 && hour <=19){
+        backgroundImg = loadImage("sprites/bg.png");
+    }
+    else{
+        backgroundImg = loadImage("sprites/bg2.jpg");
+    }
+
+
+   
  }
